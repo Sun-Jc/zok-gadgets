@@ -1,0 +1,9 @@
+import "./PoseidonNeptuneU2bn256" as hasher;
+
+def main<N>(field[N] inputs) -> field {
+    field mut o = 0;
+    for u32 i in 0..N {
+        o = hasher( [o, inputs[i]]);
+    }
+    return o;    
+}

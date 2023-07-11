@@ -3,10 +3,13 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Script.sol";
 
-contract CounterScript is Script {
+import "../src/verifier/poseidon-2.sol";
+
+contract DeployAllScript is Script {
     function setUp() public {}
 
     function run() public {
         vm.broadcast();
+        new Verifier();
     }
 }
