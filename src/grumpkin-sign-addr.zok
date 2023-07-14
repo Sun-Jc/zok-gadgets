@@ -1,0 +1,11 @@
+
+import "./lib/curve/grumpkin-derive-pubkey" as derive_pubkey;
+import "./lib/poseidon/PoseidonNeptuneU2bn256" as hash2;
+
+def main(private field[256] sk, private field msg) -> field[2] {
+    field[2] pubkey = derive_pubkey(sk);
+
+    field address = hash2([pubkey[0], pubkey[1]]);
+
+    return [address, msg];
+}

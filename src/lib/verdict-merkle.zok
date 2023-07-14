@@ -1,64 +1,15 @@
-// import "./poseidon/PoseidonNeptuneU2bn256" as hasher2;
-// import "./poseidon/hash-recursive" as hasherR;
 
-// def main<N>(field[6] mut leaf, field[N] merkleProof) -> field {
-//     // leaf[1] = leaf[1] / 7237005577332262213973186563042994240829374041602535252466099000494570602495;
-
-//     field mut res = hasherR(leaf);
-
-//     u32 Np2 = N / 2;
-
-//     for u32 it in 0..Np2 {
-        
-//         u32 i = N - (it * 2 + 2);
-//         u32 ip1 = N - (it * 2 + 1);
-
-//         field side = merkleProof[i]; 
-//         field val = merkleProof[ip1];
-
-//         field i0 = if side == 0 { val } else { res };
-//         field i1 = if side == 0 { res } else { val };
-    
-//         res = hasher2([i0, i1]);
-//     }
-
-//     return res;
-// }
-
-// // function verify(bytes32 root, bytes32[6] memory leaf, bytes32[] calldata proof) external view returns (bool) {
-// //         bytes32[] memory inputs = new bytes32[](6);
-// //         for (uint256 i = 0; i < 6; i += 1) {
-// //             inputs[i] = leaf[i];
-// //         }
-// //         inputs[1] &= 0x0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
-
-// //         bytes32 res = hasher.hashRecursive(inputs);
-// //         // console.logBytes32(res);
-
-// //         for (uint256 i = proof.length; i > 0; i -= 2) {
-// //             inputs = new bytes32[](2);
-
-// //             bytes32 position = proof[i - 2];
-// //             bytes32 sibling = proof[i - 1];
-
-// //             if (position == bytes32(uint256(0))) {
-// //                 inputs[0] = sibling;
-// //                 inputs[1] = res;
-// //             } else {
-// //                 inputs[0] = res;
-// //                 inputs[1] = sibling;
-// //             }
-
-// //             res = hasher.hash(inputs);
-
+// Author: JcSun
 
 import "./poseidon/PoseidonNeptuneU2bn256" as hasher2;
 import "./poseidon/hash-recursive" as hasherR;
 
-def main(field[6] mut leaf, u32 N, field[50] merkleProof) -> field {
-    // leaf[1] = leaf[1] / 7237005577332262213973186563042994240829374041602535252466099000494570602495;
+def hash_leaf(field[6] mut leaf) -> field {
+    return hasherR(leaf);
+}
 
-    field mut res = hasherR(leaf);
+def main(field[6] mut leaf, u32 N, field[50] merkleProof) -> field {
+    field mut res = hash_leaf(leaf);
 
     u32 Np2 = N / 2;
 
@@ -91,29 +42,3 @@ def main(field[6] mut leaf, u32 N, field[50] merkleProof) -> field {
 
     return res;
 }
-
-// function verify(bytes32 root, bytes32[6] memory leaf, bytes32[] calldata proof) external view returns (bool) {
-//         bytes32[] memory inputs = new bytes32[](6);
-//         for (uint256 i = 0; i < 6; i += 1) {
-//             inputs[i] = leaf[i];
-//         }
-//         inputs[1] &= 0x0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
-
-//         bytes32 res = hasher.hashRecursive(inputs);
-//         // console.logBytes32(res);
-
-//         for (uint256 i = proof.length; i > 0; i -= 2) {
-//             inputs = new bytes32[](2);
-
-//             bytes32 position = proof[i - 2];
-//             bytes32 sibling = proof[i - 1];
-
-//             if (position == bytes32(uint256(0))) {
-//                 inputs[0] = sibling;
-//                 inputs[1] = res;
-//             } else {
-//                 inputs[0] = res;
-//                 inputs[1] = sibling;
-//             }
-
-//             res = hasher.hash(inputs);

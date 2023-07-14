@@ -1,3 +1,5 @@
+// Author: JcSun
+
 import "./lib/verdict-merkle" as merkle;
 
 def main(private field[6] mut leaf, private u32 N, private field[50] merkleProof) -> field[7] {

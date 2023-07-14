@@ -1,3 +1,6 @@
+
+// Author: JcSun
+
 import "./lib/poseidon/PoseidonNeptuneU2bn256" as hasher;
 
 def main(private field[2] inputs) -> field {
