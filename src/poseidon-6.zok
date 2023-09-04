@@ -1,0 +1,8 @@
+
+// Author: JcSun
+
+import "./lib/poseidon/PoseidonNeptuneU6bn256" as hasher;
+
+def main(private field[6] inputs) -> field {
+    return hasher(inputs);
+}

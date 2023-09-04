@@ -1,29 +1,34 @@
 
 // Author: JcSun
 
+// to change depth, replace 64 to newDepth*2
+
 import "./poseidon/PoseidonNeptuneU2bn256" as hasher2;
-import "./poseidon/hash-recursive" as hasherR;
+import "./poseidon/PoseidonNeptuneU6bn256" as hasher6;
 
 def hash_leaf(field[6] mut leaf) -> field {
-    return hasherR(leaf);
+    log("leaf = {}, {}, {}, {}, {}, {}", leaf[0], leaf[1], leaf[2], leaf[3], leaf[4], leaf[5]);
+    return hasher6(leaf);
 }
 
-def main(field[6] mut leaf, u32 N, field[50] merkleProof) -> field {
+def main(field[6] mut leaf, u32 N, field[64] merkleProof) -> field {
     field mut res = hash_leaf(leaf);
+
+    log("leaf hash = {}", res);
 
     u32 Np2 = N / 2;
 
     field mut s = 0;
-    for u32 i in 0..50 {
+    for u32 i in 0..64 {
         s = s + merkleProof[i];
     }
     assert(s > 0);
 
-    for u32 i in 0..50 {
+    for u32 i in 0..64 {
         log(" {}, {}", i, merkleProof[i]);
     }
 
-    for u32 it in 0..25 {
+    for u32 it in 0..64 {
         u32 i = (N - (it * 2 + 2)) % N; 
         u32 ip1 = (N - (it * 2 + 1) ) % N;
 
@@ -38,6 +43,8 @@ def main(field[6] mut leaf, u32 N, field[50] merkleProof) -> field {
         } else {
             res
         };
+
+        log(" {}, {}", it, res);
     }
 
     return res;

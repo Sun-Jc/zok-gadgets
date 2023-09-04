@@ -1,7 +1,0 @@
-
-import "./lib/curve/grumpkin-derive-pubkey" as derive_pubkey;
-
-def main(private field[256] sk, private field msg) -> field[3] {
-    field[2] pubkey = derive_pubkey(sk);
-    return [pubkey[0], pubkey[1], msg];
-}

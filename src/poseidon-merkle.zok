@@ -1,7 +1,0 @@
-// Author: JcSun
-
-import "./lib/verdict-merkle" as merkle;
-
-def main(private field[6] mut leaf, private u32 N, private field[50] merkleProof) -> field[7] {
-    return [merkle(leaf, N, merkleProof), leaf[0], leaf[1], leaf[2], leaf[3], leaf[4], leaf[5]];
-}
