@@ -1,0 +1,9 @@
+from "./ec" import Curve, make_non_identity_point;
+
+def main() -> Curve {
+    return Curve{
+                a: 0, 
+                b: -17, 
+                generator: make_non_identity_point([1, 21888242871839275204614721864072299718383108512864252727949815652902133356757])
+            };
+}

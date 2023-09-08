@@ -1,0 +1,214 @@
+
+
+struct AffinePoint {
+    field x;
+    field y;
+    bool is_identity;
+}
+
+struct JacobianPoint {
+    field x;
+    field y;
+    field z;
+}
+
+// base field free with proving system
+struct Curve {
+    field a;
+    field b;
+    AffinePoint generator;
+}
+
+def identity() -> AffinePoint {
+    return AffinePoint {
+        x: 0,
+        y: 0,
+        is_identity: true,
+    };
+}
+
+def internal_is_identity(JacobianPoint j) -> bool {
+    return j.x == 1 && j.y == 1 && j.z == 0;
+}
+
+def is_neg(AffinePoint p, AffinePoint q) -> bool {
+    return (p.x == q.x && p.y == -q.y) || (p.is_identity && q.is_identity);
+}
+
+def is_same(AffinePoint p, AffinePoint q) -> bool {
+    return p == q;
+}
+
+def internal_to_jacobian(AffinePoint p) -> JacobianPoint {
+    bool is_identity = p.is_identity;
+    JacobianPoint j = if (is_identity) {
+        JacobianPoint {
+            x: 1,
+            y: 1,
+            z: 0,
+        }
+    } else {
+        JacobianPoint {
+            x: p.x,
+            y: p.y,
+            z: 1,
+        }
+    };
+    return j;
+}
+
+def internal_to_affine(JacobianPoint j) -> AffinePoint {
+    bool is_identity = internal_is_identity(j);
+
+    field z = if (j.z == 0) {
+        1
+    } else {
+        j.z
+    };
+
+    field z_square = z * z;
+    field z_cube = z * z_square;
+
+    field z_square_inv = 1 / z_square;
+    field z_cube_inv = 1 / z_cube;
+
+    AffinePoint p = 
+        if (is_identity) {
+            AffinePoint {
+                x: 0,
+                y: 0,
+                is_identity: true,
+            }
+        } else {
+            AffinePoint {
+                x: j.x * z_square_inv,
+                y: j.y * z_cube_inv,
+                is_identity: false,
+            }
+        };
+    return p;
+}
+
+def make_non_identity_point(field[2] coordinates) -> AffinePoint {
+    return AffinePoint {
+        x: coordinates[0],
+        y: coordinates[1],
+        is_identity: false,
+    };
+}
+
+def is_on_curve(AffinePoint p, Curve ec) -> bool {
+    bool r = if (p.is_identity) {
+        true
+    } else {
+        p.y * p.y == p.x * p.x * p.x + ec.a * p.x + ec.b
+    };
+    return r;
+}
+
+def internal_double(JacobianPoint j, Curve ec) -> JacobianPoint {
+    field x = j.x;
+    field y = j.y;
+    field z = j.z;
+
+    field v = 4 * x * y * y;
+    field w = 3 * x * x + ec.a * z * z * z * z;
+    
+    field res_x = w * w - 2 * v;
+    field res_y = w * (v - res_x) - 8 * y * y * y * y;
+    field res_z = 2 * y * z;
+
+    return JacobianPoint {
+        x: res_x,
+        y: res_y,
+        z: res_z,
+    };
+}
+
+def internal_add_p_q(JacobianPoint p, JacobianPoint q) -> JacobianPoint {
+    field x1 = p.x;
+    field y1 = p.y;
+    field z1 = p.z;
+    field x2 = q.x;
+    field y2 = q.y;
+    field z2 = q.z;
+    
+    field r = x1 * z2 * z2;
+    field s = x2 * z1 * z1;
+    field t = y1 * z2 * z2 * z2;
+    field u = y2 * z1 * z1 * z1;
+    field v = s - r;
+    field w = u - t;
+
+    field x3 = w * w  - v * v * v - 2 * r * v * v;
+    field y3 = w * (v * v * r - x3) - t * v * v * v;
+    field z3 = v * z1 * z2;
+
+    return JacobianPoint {
+        x: x3,
+        y: y3,
+        z: z3,
+    };
+}
+
+def internal_add(AffinePoint p, AffinePoint q, Curve ec) -> AffinePoint {
+    bool same = is_same(p, q);
+    bool neg = is_neg(p, q);
+
+    AffinePoint mut r = if (same) {
+        internal_to_affine(internal_double(internal_to_jacobian(p), ec))
+    } else {
+        identity()
+    };
+
+    r = if ( !neg && !same) {
+        internal_to_affine(internal_add_p_q(internal_to_jacobian(p), internal_to_jacobian(q)))
+    } else {
+        r
+    };
+
+    r = if (p.is_identity) {
+        q
+    } else {
+        r
+    };
+
+    r = if (q.is_identity) {
+        p
+    } else {
+        r
+    };
+    return r;
+}
+
+def add(AffinePoint p, AffinePoint q, Curve ec) -> AffinePoint {   
+    assert(is_on_curve(p, ec));
+    assert(is_on_curve(q, ec));
+
+    return internal_add(p, q, ec);
+}
+
+// s: MSF
+def mul(AffinePoint p, field[256] s, Curve ec) -> AffinePoint {
+    assert(is_on_curve(p, ec));
+
+    AffinePoint mut r = identity();
+    AffinePoint mut base = p;
+
+
+    for u32 i in 0..256 {
+        field b = s[255-i];
+        r = if (b == 0) {
+            r
+        } else {
+            add(r, base, ec)
+        };
+
+        assert(is_on_curve(r, ec));
+
+        base = add(base, base, ec);
+    }
+
+    assert(is_on_curve(r, ec));
+    return r;
+}

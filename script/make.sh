@@ -1,3 +1,4 @@
+#!/bin/bash
 circuit_name=$1
 
 src_zok="$(pwd)/src/${circuit_name}.zok"

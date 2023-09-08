@@ -1,0 +1,13 @@
+from "./lib/curve/ec" import Curve, AffinePoint, add, make_non_identity_point;
+import "./lib/curve/grumpkin";
+
+def main(private field[4] ps) -> field[2] {
+    Curve g = grumpkin();
+
+    AffinePoint p = make_non_identity_point([ps[0], ps[1]]);
+    AffinePoint q = make_non_identity_point([ps[2], ps[3]]);
+
+    AffinePoint r = add(p, q, g);
+
+    return [r.x, r.y];
+}

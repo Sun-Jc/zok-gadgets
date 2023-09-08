@@ -5,7 +5,6 @@ import json
 def test_dir(test_name: str):
     return 'out/test/{}'.format(test_name)
 
-
 def pre_test(test_name: str):
     dir_path = test_dir(test_name)
     if os.path.exists(dir_path):
@@ -20,16 +19,16 @@ def do_test(test_name: str, witness: str):
     os.system('bash script/prove.sh {} {} {}'.format(test_name, proof_path, witness))
 
 
-def assert_input(test_name: str, id: int, expected: str):
+def assert_input(test_name: str, index: int, expected: str):
     dir_path = test_dir(test_name)
     proof_path = '{}/proof'.format(dir_path)
     proof = json.load(open(proof_path, 'r'))
-    if len(proof['inputs']) <= id:
+    if len(proof['inputs']) <= index:
         raise Exception('Invalid input id')
-    elif proof['inputs'][id] != expected:
+    elif proof['inputs'][index] != expected:
         raise Exception('Mismatched input')
     else:
-        print('1 assert passed: {}, {}, {}'.format(test_name, id, expected))
+        print('{} assert passed: {}, {}'.format(index, test_name, expected))
     
 
 def test_circuit(test_name: str, witness: str, expected_inputs: list):

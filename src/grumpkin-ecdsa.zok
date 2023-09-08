@@ -1,0 +1,14 @@
+from "./lib/curve/ec" import Curve, AffinePoint, add, make_non_identity_point;
+from "./lib/curve/ecdsa" import recover_public_key, is_bit_repr;
+import "./lib/curve/grumpkin";
+
+def main(field[2] r, private field[256] s_bits, field s, field commitment, private field[256] s_rx_bits, private field[256] m_rx_bits) -> field[2] {
+    Curve g = grumpkin();
+
+    AffinePoint r = make_non_identity_point([r[0], r[1]]);
+
+    assert( is_bit_repr(s, s_bits));
+
+    AffinePoint pubkey = recover_public_key(g, r, s_bits, commitment, s_rx_bits, m_rx_bits);
+    return [pubkey.x, pubkey.y];
+}
