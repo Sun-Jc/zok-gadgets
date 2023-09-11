@@ -26,7 +26,7 @@ def assert_input(test_name: str, index: int, expected: str):
     if len(proof['inputs']) <= index:
         raise Exception('Invalid input id')
     elif proof['inputs'][index] != expected:
-        raise Exception('Mismatched input')
+        raise Exception('Mismatched input {}, expected {}, actual {}'.format(index, expected,  proof['inputs'][index]))
     else:
         print('{} assert passed: {}, {}'.format(index, test_name, expected))
     

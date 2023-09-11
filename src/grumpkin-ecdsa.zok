@@ -1,14 +1,36 @@
 from "./lib/curve/ec" import Curve, AffinePoint, add, make_non_identity_point;
-from "./lib/curve/ecdsa" import recover_public_key, is_bit_repr;
+from "./lib/curve/ecdsa" import verify_ecdsa, make_repr;
+import "./lib/poseidon/PoseidonNeptuneU2bn256" as hash;
 import "./lib/curve/grumpkin";
 
-def main(field[2] r, private field[256] s_bits, field s, field commitment, private field[256] s_rx_bits, private field[256] m_rx_bits) -> field[2] {
+def main(private field[256] rx_bits, 
+        private field[256] ry_bits, 
+        private field[256] s_bits, 
+        private field[256] commitment_bits, 
+        private field[2] pk_fields
+    ) -> field[5] { // r, s, v, com, signer
+    field v = if (ry_bits[255] == 0) {
+        27
+    } else {
+        28
+    };
+
+    field s = make_repr(s_bits);
+
     Curve g = grumpkin();
 
-    AffinePoint r = make_non_identity_point([r[0], r[1]]);
+    field rx = make_repr(rx_bits);
+    field ry = make_repr(ry_bits);
 
-    assert( is_bit_repr(s, s_bits));
+    AffinePoint pk = make_non_identity_point(pk_fields);
 
-    AffinePoint pubkey = recover_public_key(g, r, s_bits, commitment, s_rx_bits, m_rx_bits);
-    return [pubkey.x, pubkey.y];
+    assert(verify_ecdsa(g, rx_bits, rx, ry, s_bits, commitment_bits, pk));
+
+    field commitment = make_repr(commitment_bits);
+
+    field signer_addr = hash(pk_fields);
+
+    log("pk {}", pk);
+
+    return [rx, s, v, commitment, signer_addr];
 }

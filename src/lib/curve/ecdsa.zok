@@ -1,44 +1,36 @@
-from "./ec" import Curve, AffinePoint, add, mul, make_non_identity_point;
+from "./ec" import Curve, AffinePoint, add, mul, make_non_identity_point, is_same;
 
 // bits: MSB first
-def internal_repr(field[256] bits) -> field {
+def make_repr(field[256] bits) -> field {
     field mut y = 0;
     field mut base = 1;
     for u32 i in 0..256 {
-        y = y + base * bits[255-i];
+        field bit = bits[255-i];
+        assert(bit == 0 || bit == 1);
+        y = y + base * bit;
         base = base * 2;
     }
     return y;
 }
 
 def is_bit_repr(field x, field[256] bits) -> bool {
-    field y = internal_repr(bits);
+    field y = make_repr(bits);
     return y == x;
 }
 
+def verify_ecdsa(Curve ec, field[256] rx_bits, field rx, field ry, field[256] s_bits, field[256] commitment_bits, AffinePoint pk) -> bool {
+    field rx = make_repr(rx_bits);
 
-def recover_public_key(Curve ec, AffinePoint r, field[256] s_bits, field commitment, field[256] s_rx_bits, field[256] m_rx_bits) -> AffinePoint {
-    field s = internal_repr(s_bits);
+    AffinePoint r = make_non_identity_point([rx, ry]);
 
-    log("s: {}", s);
+    AffinePoint sr = mul(r, s_bits, ec);
 
-    field s_rx = s / r.x;
+    AffinePoint rp = mul(pk, rx_bits, ec);
 
-    log("s_rx: {}", s_rx);
+    AffinePoint m = mul(ec.generator, commitment_bits, ec);
 
-    assert(is_bit_repr(s_rx, s_rx_bits));
-
-    field m_rx = commitment / r.x;
-
-    assert(is_bit_repr(m_rx, m_rx_bits));
-
-    AffinePoint s_rx_r = mul(r, s_rx_bits, ec);
-
-    AffinePoint m_r_x_g = mul(ec.generator, m_rx_bits, ec);
-
-    AffinePoint m_r_x_g_neg = make_non_identity_point([m_r_x_g.x, -m_r_x_g.y]);
-
-    AffinePoint signer = add(s_rx_r, m_r_x_g_neg, ec);
-
-    return signer;
+    AffinePoint left = sr;
+    AffinePoint right = add(rp, m, ec);
+    
+    return is_same(left, right);
 }
