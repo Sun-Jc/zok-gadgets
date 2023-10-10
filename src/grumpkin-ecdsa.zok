@@ -6,8 +6,10 @@ import "./lib/curve/grumpkin";
 def main(private field[256] rx_bits, 
         private field[256] ry_bits, 
         private field[256] s_bits, 
-        private field[256] commitment_bits, 
+        private field[256] commitment_bits,
+        private field[256] address_bits,
         private field[2] pk_fields
+
     ) -> field[5] { // r, s, v, com, signer
     field v = if (ry_bits[255] == 0) {
         27
@@ -28,9 +30,21 @@ def main(private field[256] rx_bits,
 
     field commitment = make_repr(commitment_bits);
 
-    field signer_addr = hash(pk_fields);
+    field sig_signer_addr = hash(pk_fields);
+
+    field full_input_signer_addr = make_repr(address_bits);
+
+    assert(sig_signer_addr == full_input_signer_addr);
+
+    field[256] mut constrained_address_bits = [0; 256];
+    // cut off the top 16 bits
+    for u32 i in 16..256 {
+        constrained_address_bits[i] = address_bits[i];
+    }
+    field constrained_signer_addr = make_repr(constrained_address_bits);
+
 
     log("pk {}", pk);
 
-    return [rx, s, v, commitment, signer_addr];
+    return [rx, s, v, commitment, constrained_signer_addr];
 }
