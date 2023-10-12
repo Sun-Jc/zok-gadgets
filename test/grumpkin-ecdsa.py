@@ -8,7 +8,7 @@ s = int('0x0c1e348d806017907b76ec705aec1fbb12776f133f9c530cf283acb46d8ca525', 16
 px = int('0x0000000000000000000000000000000000000000000000000000000000000001', 16)
 py = int('0x30644e72e131a026e93ce7417adcfaf9fb0cdb0288a15dfcc0a231066dc0d8d5', 16)
 signer = '0x1000ff071941b90a0157c47a6c098acf771e138db4b3d4a00b1fca17f1f671cb'
-constrained_signer = '0x00' + signer[4:]
+constrained_signer = '0x0' + signer[3:]
 
 name = 'grumpkin-ecdsa'
 

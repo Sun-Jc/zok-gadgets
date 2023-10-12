@@ -14,6 +14,8 @@ def hash_leaf(field[6] mut leaf) -> field {
 def main(field[6] mut leaf, u32 N, field[64] merkleProof) -> field {
     field mut res = hash_leaf(leaf);
 
+    log("leaf = {}\n", res);
+
     u32 Np2 = N / 2;
 
     field mut s = 0;

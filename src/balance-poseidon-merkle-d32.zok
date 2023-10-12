@@ -1,0 +1,27 @@
+// Author: JcSun
+
+// maximum depth: 32
+
+import "./lib/verdict-merkle-d32" as merkle;
+import "./lib/poseidon/PoseidonNeptuneU2bn256" as hash;
+from "./lib/curve/ecdsa" import make_repr;
+
+const field ONE = 1;
+
+def main(private field owner, private field slot, private field balance, private field next_label, private field[256] label_bits, private u32 N, private field[64] merkleProof) -> field[4] {
+    field full_label = hash([owner, slot]);
+    field full_label_from_bits = make_repr(label_bits);
+
+    assert(full_label == full_label_from_bits, "label mismatch");
+
+    field[256] mut constrained_label_bits = label_bits;
+    for u32 i in 0..4 {
+        constrained_label_bits[i] = 0;
+    }
+
+    field constrained_label = make_repr(constrained_label_bits);
+
+    field[6] leaf = [ONE, constrained_label, next_label, balance, owner, slot];
+
+    return [merkle(leaf, N, merkleProof), owner, slot, balance];
+}

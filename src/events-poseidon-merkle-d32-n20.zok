@@ -1,0 +1,18 @@
+// Author: JcSun
+
+// maximum depth: 32
+
+import "./lib/verdict-merkle-d32" as merkle;
+import "./lib/poseidon/PoseidonNeptuneU2bn256" as hash;
+from "./lib/curve/ecdsa" import make_repr;
+
+const field ONE = 1;
+
+def main(private field lastAccHash, private field numOfEvents, private field[20] types, private field[20] owners, private field[20] slots, private field[20] amounts, private field[20] sucs, private field next_label, private u32 N, private field[64] merkleProof) -> field[82] {
+    
+    field[6] leaf = [ONE, constrained_label, next_label, balance, owner, slot];
+
+    field root = merkle(leaf, N, merkleProof);
+
+    return [root, failBitMap, events]
+}
