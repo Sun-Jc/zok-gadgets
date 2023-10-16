@@ -1,18 +1,86 @@
 // Author: JcSun
 
 // maximum depth: 32
+// maximum num of events: 20
 
 import "./lib/verdict-merkle-d32" as merkle;
-import "./lib/poseidon/PoseidonNeptuneU2bn256" as hash;
+import "./lib/poseidon/PoseidonNeptuneU2bn256" as hash2;
+import "./lib/poseidon/PoseidonNeptuneU6bn256" as hash6;
 from "./lib/curve/ecdsa" import make_repr;
 
 const field ONE = 1;
+const field EVENT_LABEL = 1;
+const field EVENT_LEAF_OWNER = 1;
+const field EVENT_LEAF_SLOT = 1;
 
-def main(private field lastAccHash, private field numOfEvents, private field[20] types, private field[20] owners, private field[20] slots, private field[20] amounts, private field[20] sucs, private field next_label, private u32 N, private field[64] merkleProof) -> field[82] {
-    
-    field[6] leaf = [ONE, constrained_label, next_label, balance, owner, slot];
+def hash_of_events(field lastAccHash, u32 numOfEvents, field[20] types, field[20] owners, field[20] slots, field[20] amounts, field[20] sucs) -> field[2] {
+    field mut res = lastAccHash;
+    field mut failBitMap = 0;
+
+    field mut b = 1;
+
+    for u32 it in 0..20 {
+        res = if (it < numOfEvents) {
+            hash6([res, types[it], owners[it], slots[it], amounts[it], sucs[it]])
+        } else {
+            res
+        };
+
+        field fail = if (it < numOfEvents && sucs[it] == 1) {
+            b
+        } else {
+            0
+        };
+
+        failBitMap = failBitMap + fail;
+
+        b = b * 2;
+    }
+
+    return [res, failBitMap];
+}
+
+def make_events(field[20] types, field[20] owners, field[20] slots, field[20] amounts, field[20] sucs) -> field[100] {
+    field[100] mut res = [0; 100];
+    for u32 it in 0..20 {
+        res[it * 4] = types[it];
+        res[it * 4 + 1] = owners[it];
+        res[it * 4 + 2] = slots[it];
+        res[it * 4 + 3] = amounts[it];
+        res[it * 4 + 4] = sucs[it];
+    }
+    return res;
+}
+
+
+def main(private field lastAccHash, 
+        private u32 numOfEvents, 
+        private field[20] types, 
+        private field[20] owners, 
+        private field[20] slots, 
+        private field[20] amounts, 
+        private field[20] sucs, 
+        private field next_label, 
+        private u32 N, 
+        private field[64] merkleProof) -> field[102] {
+
+
+    field[2] res = hash_of_events(lastAccHash, numOfEvents, types, owners, slots, amounts, sucs);
+    field[100] events = make_events(types, owners, slots, amounts, sucs);
+
+    field balance = res[0];
+    field failBitMap = res[1];
+                
+    field[6] leaf = [ONE, EVENT_LABEL, next_label, balance, EVENT_LEAF_OWNER, EVENT_LEAF_SLOT];
 
     field root = merkle(leaf, N, merkleProof);
 
-    return [root, failBitMap, events]
+    field[102] mut r = [0; 102];
+    r[0] = root;
+    r[1] = failBitMap;
+    for u32 it in 0..100 {
+        r[it + 2] = events[it];
+    }
+
+    return r;
 }
