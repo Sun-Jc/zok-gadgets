@@ -25,6 +25,6 @@ def make_h256(s):
 
 witness = '{} {} {} {} {} {} {}'.format(make_bits(rx), make_bits(ry), make_bits(s), make_bits(m), make_bits(int(signer,16)), px, py)
 
-expected = list(enumerate([make_h256(rx), make_h256(s), make_h256(v), make_h256(m), constrained_signer]))
+expected = list(enumerate([make_h256(m), constrained_signer]))
 
 test_circuit(name, witness, expected)

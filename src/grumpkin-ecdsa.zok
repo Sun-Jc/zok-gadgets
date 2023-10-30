@@ -10,7 +10,7 @@ def main(private field[256] rx_bits,
         private field[256] address_bits,
         private field[2] pk_fields
 
-    ) -> field[5] { // r, s, v, com, signer
+    ) -> field[2] { //com, signer
     field v = if (ry_bits[255] == 0) {
         27
     } else {
@@ -46,5 +46,5 @@ def main(private field[256] rx_bits,
 
     log("pk {}", pk);
 
-    return [rx, s, v, commitment, constrained_signer_addr];
+    return [commitment, constrained_signer_addr];
 }
